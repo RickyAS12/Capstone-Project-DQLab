@@ -12,29 +12,29 @@ st.set_page_config(
 
 # Calling data
 # 1. populasi ayam
-pda = pd.read_csv("File csv dan excel\indonesia_livestock_chicken_202402111419.csv")
+pda = pd.read_csv("File csv dan excel\\indonesia_livestock_chicken_202402111419.csv")
 pop_ayam = pda.loc[pda['year_added'] >= 2016]
 
 # 2. populasi masyarakat Indonesia
-pmi = pd.read_csv("File csv dan excel\Jumlah Penduduk Indonesia.csv")
+pmi = pd.read_csv("File csv dan excel\\Jumlah Penduduk Indonesia.csv")
 
 # 3. rata-rata konsumsi masyarakat Indonesia per Kapita
-rk = pd.read_csv("File csv dan excel\Rata-Rata Konsumsi Sampai 2023.csv")
+rk = pd.read_csv("File csv dan excel\\Rata-Rata Konsumsi Sampai 2023.csv")
 
 # 4. SDG kelaparan di Indonesia
-ski = pd.read_csv("File csv dan excel\sdg_indonesia_202402151955.csv")
+ski = pd.read_csv("File csv dan excel\\sdg_indonesia_202402151955.csv")
 
 # 5. harga daging ayam per bulan di Indonesia
-hdg = pd.read_csv("File csv dan excel\brand_new_harga_ayam.csv")
+hdg = pd.read_csv("File csv dan excel\\brand_new_harga_ayam.csv")
 
 # 6 . jumlah pendapatan masyarakat Indonesia
-jumpen = pd.read_csv("File csv dan excel\brand_new_pendapatan_indonesia_per_tahun.csv")
+jumpen = pd.read_csv("File csv dan excel\\brand_new_pendapatan_indonesia_per_tahun.csv")
 
 # 7. harga_daging_ayam_per_tahun
-hdgpt = pd.read_csv("File csv dan excel\harga_daging_ayam_per_tahun.csv")
+hdgpt = pd.read_csv("File csv dan excel\\harga_daging_ayam_per_tahun.csv")
 
 # 8. produksi_sampah_di_Indonesia
-psi = pd.read_csv("File csv dan excel\food_waste_data_and_research_202402042350.csv")
+psi = pd.read_csv("File csv dan excel\\food_waste_data_and_research_202402042350.csv")
 
 # Basic processing if necessary
 # 1. Creating a new dataframe for layered chart for I want the legend then change it to long-dataframe format
