@@ -314,7 +314,7 @@ st.write("""
          protein hewani, maka perlu diimbangi dengan penyediaannya.
          """)
 st.write('''
-         Dapat kita simpulkan pada 3 diagram tersebut bahwa jumlah populasi ayam hidup jauh lebih
+         Pada diagram di bawah, dapat dilihat bahwa jumlah populasi ayam hidup jauh lebih
          banyak dibandingkan dengan jumlah populasi manusia. Produksi daging ayam di Indonesia
          jauh melebihi konsumsi masyarakat Indonesia, yang menghasilkan surplus daging ayam yang dapat
          diekspor maupun diolah kedalam bentuk makanan lainnya.
