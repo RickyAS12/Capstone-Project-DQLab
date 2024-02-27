@@ -68,7 +68,8 @@ note_layer = alt.Chart(pd.DataFrame({'note': [note_text]})).mark_text(
     fontSize=10,
     fontWeight='normal',
     dx=-150,
-    dy=45
+    dy=45,
+    color='gray'
 ).encode(
     text='note:N'
 )
