@@ -313,6 +313,12 @@ st.write("""
          Seiring dengan pertumbuhan penduduk yang pesat dengan kesadaran yang tinggi tentang pentingnya 
          protein hewani, maka perlu diimbangi dengan penyediaannya.
          """)
+st.write('''
+         Dapat kita simpulkan pada 3 diagram tersebut bahwa jumlah populasi ayam hidup jauh lebih
+         banyak dibandingkan dengan jumlah populasi manusia. Produksi daging ayam di Indonesia
+         jauh melebihi konsumsi masyarakat Indonesia, yang menghasilkan surplus daging ayam yang dapat
+         diekspor maupun diolah kedalam bentuk makanan lainnya.
+             ''')
 st.write('')
 
 column1, column2 = st.columns(2)
@@ -321,18 +327,8 @@ with column1:
 with column2:
     st.altair_chart(combined_total_jum_konsumsi, use_container_width=True)
 column3, column4 = st.columns(2)
-with column3:
-    st.altair_chart(combined_chart_for_surplus, use_container_width=True)
-with column4:
-    st.write('')
-    st.write('')
-    st.write('')
-    st.write('''
-             Dapat kita simpulkan pada 3 diagram tersebut bahwa jumlah populasi ayam hidup jauh lebih
-             banyak dibandingkan dengan jumlah populasi manusia. Produksi daging ayam di Indonesia
-             jauh melebihi konsumsi masyarakat Indonesia, yang menghasilkan surplus daging ayam yang dapat
-             diekspor maupun diolah kedalam bentuk makanan lainnya.
-             ''')
+
+st.altair_chart(combined_chart_for_surplus, use_container_width=True)
 
 st.markdown("**Namun...**")
 
