@@ -482,16 +482,6 @@ with column4:
              jauh melebihi konsumsi masyarakat Indonesia, yang menghasilkan surplus daging ayam yang dapat
              diekspor maupun diolah kedalam bentuk makanan lainnya.
              ''')
-
-st.markdown("**Namun...**")
-
-tab1, tab2, tab3 = st.tabs(["Gambar 1", "Gambar 2", "Gambar 3"])
-with tab1:
-    st.image('File csv dan excel\Foto-foto untuk report\Kelaparan 1.PNG', caption='Kompas, 2023')
-with tab2:
-    st.image('File csv dan excel\Foto-foto untuk report\Kelaparan 2.PNG', caption='CNBC, 2023')
-with tab3:
-    st.image('File csv dan excel\Foto-foto untuk report\Kelaparan 3.PNG', caption='Tempo, 2023')
     
 column5, column6 = st.columns(2)
 with column5:
