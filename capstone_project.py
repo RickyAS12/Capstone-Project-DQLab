@@ -12,11 +12,13 @@ st.set_page_config(
 
 # Calling data
 # 1. populasi ayam
-pda = pd.read_csv("File csv dan excel/indonesia_livestock_chicken_202402111419.csv")
-pop_ayam = pda.loc[pda['year_added'] >= 2016]
+# pda = pd.read_csv("File csv dan excel/indonesia_livestock_chicken_202402111419.csv")
+# pop_ayam = pda.loc[pda['year_added'] >= 2016]
+# Above dataset not used anymore
 
 # 2. populasi masyarakat Indonesia
 pmi = pd.read_csv("File csv dan excel/Jumlah Penduduk Indonesia.csv")
+pop_manusia = pmi.loc[pmi['Tahun'] >= 2018]
 
 # 3. rata-rata konsumsi masyarakat Indonesia per Kapita
 rk = pd.read_csv("File csv dan excel/Rata-Rata Konsumsi Sampai 2023.csv")
@@ -36,11 +38,23 @@ hdgpt = pd.read_csv("File csv dan excel/harga_daging_ayam_per_tahun.csv")
 # 8. produksi_sampah_di_Indonesia
 psi = pd.read_csv("File csv dan excel/food_waste_data_and_research_202402042350.csv")
 
+# 9. Produksi daging ayam di Indonesia per provinsi
+pda2 = pd.read_csv("File csv dan excel/brand_new_produksi_daging_provinsi_indonesia.csv")
+
+# 10. Produksi limbah di Indonesia
+pl = pd.read_csv("File csv dan excel/brand_new_limbah.csv")
+
+# 11. Pengeluaran bahan makanan rata-rata di Indonesia
+pbm = pd.read_csv("File csv dan excel/brand_new_pengeluaran_bahan_makanan_per_kapita_sebulan_menurut_kelompok_barang.csv")
+
+# 12. Produksi limbah di Indonesia 2
+pl2 = pd.read_csv("File csv dan excel/brand_new_limbah2.csv")
+
 # Basic processing if necessary
 # 1. Creating a new dataframe for layered chart for I want the legend then change it to long-dataframe format
-tahun_pop = pmi['Tahun'].tolist()
-jumlah_penduduk = pmi['Jumlah Penduduk'].tolist()
-jumlah_ayam = pop_ayam['value'].tolist()
+tahun_pop = pop_manusia['Tahun'].tolist()
+jumlah_penduduk = pop_manusia['Jumlah Penduduk'].tolist()
+jumlah_ayam = pda2['INDONESIA'].tolist()
 total_pop = pd.DataFrame({
     'Tahun':tahun_pop,
     'Jumlah Penduduk':jumlah_penduduk,
@@ -58,27 +72,16 @@ total_pop_line_chart = alt.Chart(data_long_for_total_pop).mark_line().encode(
     y=alt.Y('total_manusia_dan_ayam:Q', title='Jumlah/1000 satuan', scale=alt.Scale(zero=False)),
     color='category:N'
 ).properties(
-    title='Perbandingan Populasi Masyarakat dan Ayam di Indonesia'
+    title='Perbandingan Populasi Masyarakat dan Produksi Ayam Pedaging di Indonesia'
 )
-note_text = "Rata-rata bobot ayam ketika dipanen adalah 0,7-2,0 kg (Nurjannah N., 2020)"
-source_total_pop = "SOURCE: Food And Agriculture Orgnization of the United Nations, 2023; Badan Pusat Statistik, 2023"
-note_layer = alt.Chart(pd.DataFrame({'note': [note_text]})).mark_text(
-    align='left',
-    baseline='middle',
-    fontSize=10,
-    fontWeight='normal',
-    dx=-150,
-    dy=45,
-    color='gray'
-).encode(
-    text='note:N'
-)
+
+source_total_pop = "SOURCE: Badan Pusat Statistik, 2022 & 2023"
 source_chart_total_pop = alt.Chart(pd.DataFrame({'note': [source_total_pop]})).mark_text(
     align='left',
     baseline='top',
     color='gray',
     fontSize=10,
-    dx= -200,
+    dx= -90,
     dy= 175
 ).encode(
     text='note:N',
@@ -104,7 +107,7 @@ tooltips_for_total_pop = (
         )
         .add_selection(hover_for_total_pop)
     )
-combined_chart_total_pop = total_pop_line_chart + note_layer + source_chart_total_pop + points_for_total_pop + tooltips_for_total_pop
+combined_chart_total_pop = total_pop_line_chart + source_chart_total_pop + points_for_total_pop + tooltips_for_total_pop
 
 # 2. Creating a new dataframe for 'rata-rata konsumsi' for easy chart-making
 jum_konsumsi = []
@@ -158,13 +161,13 @@ combined_total_jum_konsumsi = konsumsi_line_chart + source_chart_total_jum_konsu
 # 3. Creating a new dataframe and line chart for 'surplus konsumsi daging ayam'
 konsumsi_daging_ayam_per_tahun = jum_konsumsi[:4]
 konsumsi_rata_rata_daging_ayam_per_tahun = []
-jumlah_populasi_untuk_konsumsi = jumlah_penduduk[3:]
+jumlah_populasi_untuk_konsumsi = jumlah_penduduk[1:]
 for i in range(len(jumlah_populasi_untuk_konsumsi)):
     konsumsi_rata_rata_daging_ayam_per_tahun.append(konsumsi_daging_ayam_per_tahun[i] * jumlah_populasi_untuk_konsumsi[i] * 1000)
-populasi_ayam_2019_2022 = jumlah_ayam[3:]
+populasi_ayam_2019_2022 = jumlah_ayam[1:]
 produksi_daging_ayam_2019_2022 = []
 for i in range(len(populasi_ayam_2019_2022)):
-    produksi_daging_ayam_2019_2022.append(populasi_ayam_2019_2022[i] * 1000 * 0.7)
+    produksi_daging_ayam_2019_2022.append(populasi_ayam_2019_2022[i] * 1000)
 tahun_konsumsi = []
 for year in range(2019, 2023):
     tahun_konsumsi.append(year)
@@ -216,6 +219,11 @@ def format_big_number(num):
 CURR_SCORE = ski.loc[ski['year_added'] == 2023, 'goal_2_score'].values[0]
 PERV_SCORE = ski.loc[ski['year_added'] == 2022, 'goal_2_score'].values[0]
 
+def format_other_big_number(number):
+    formatted_number = "{:,.0f}".format(number)
+    return formatted_number
+
+
 # 5. Pie Chart for Category food waste in Indonesia
 new_psi_column = ['Household Estimate', 'Retail Estimate', 'Food Service Estimate']
 jum_food_waste = []
@@ -246,64 +254,205 @@ source_chart_total_jum_food_waste = alt.Chart(pd.DataFrame({'note': [source_tota
 )
 combined_pi_chart_food_waste = psi_pie_chart + source_chart_total_jum_food_waste
 
-# 6. Persentase Jumlah Pendapatan dengan Jumlah Konsumsi per Kapita di Indonesia
-persentase_jumlah_konsumsi = []
-tahun_jumlah_konsumsi_baru = [2020, 2021, 2022, 2023]
+# 6. Chart Persentase Kenaikan Jumlah Pendapatan
 persentase_jumlah_pendapatan = []
 tahun_jumlah_pendapatan_baru = [2019, 2020, 2021, 2022, 2023]
-for i in range(4):
-    column_name_current = rk.columns[i+2]
-    column_name_next = rk.columns[i+3]
-    percentage = (rk[column_name_next].values[0] - rk[column_name_current].values[0]) / rk[column_name_current].values[0]
-    persentase_jumlah_konsumsi.append(percentage)
 for i in range(5):
-    percentage = (jumpen['INDONESIA'].loc[i+1] - jumpen['INDONESIA'].loc[i]) / jumpen['INDONESIA'].loc[i]
-    persentase_jumlah_pendapatan.append(percentage)
-pers_jum_konsumsi = pd.DataFrame({
-    'Tahun':tahun_jumlah_konsumsi_baru,
-    'Persentase (%)': persentase_jumlah_konsumsi
-})
+    pencapaian = (jumpen['INDONESIA'].loc[i+1] - jumpen['INDONESIA'].loc[i])
+    persentase_jumlah_pendapatan.append(pencapaian)
 pers_jum_pendapatan = pd.DataFrame({
     'Tahun':tahun_jumlah_pendapatan_baru,
-    'Persentase (%)': persentase_jumlah_pendapatan
+    'Kenaikan': persentase_jumlah_pendapatan
 })
-pers_jum_konsumsi_line_chart = alt.Chart(pers_jum_konsumsi).mark_line().encode(
-    x=alt.X('Tahun:N', axis=alt.Axis(labelAngle=0)),
-    y=alt.Y('Persentase (%):Q', scale=alt.Scale(zero=False))
-).properties(
-    title='Perbandingan persentase jumlah konsumsi dan jumlah pendapatan setiap tahun'
+jumpen_first_row = {'Tahun':'Begin', 'Kenaikan':1638.55}
+jumpen_last_row = {'Tahun':'End', 'Kenaikan':0}
+jumpen_first_row_df = pd.DataFrame([jumpen_first_row])
+jumpen_last_row_df = pd.DataFrame([jumpen_last_row])
+source = pd.concat([jumpen_first_row_df, pers_jum_pendapatan,jumpen_last_row_df], ignore_index=True)
+
+# 7. Chart Pendapatan per Kapita di Indonesia
+line_chart_pendapatan = alt.Chart(jumpen).mark_line().encode(
+    x = alt.X('Tahun:N', axis=alt.Axis(labelAngle=0)),
+    y = alt.Y("INDONESIA:Q" ,scale=alt.Scale(zero=False))
 )
-pers_jum_pendapatan_line_chart = alt.Chart(pers_jum_pendapatan).mark_line(color='green').encode(
-    x=alt.X('Tahun:N', axis=alt.Axis(labelAngle=0)),
-    y=alt.Y('Persentase (%):Q', scale=alt.Scale(zero=False))
-).properties(
-    title='Perbandingan persentase jumlah konsumsi dan jumlah pendapatan setiap tahun'
-)
-note_jum_konsumsi = 'Persentase Jumlah Konsumsi Daging Ayam'
-note_jum_pendapatan = 'Persentase Jumlah Pendapatan'
-label_pers_jum_konsumsi = alt.Chart(pd.DataFrame({'note':[note_jum_konsumsi]})).mark_text(
+source_total_pendapatan = "SOURCE: Badan Pusat Statistik, 2023"
+source_chart_total_pendapatan = alt.Chart(pd.DataFrame({'note': [source_total_pendapatan]})).mark_text(
     align='left',
-    baseline='middle',
+    baseline='top',
+    color='gray',
     fontSize=10,
-    fontWeight='normal',
-    dy=30,
-    dx=390,
-    color='steelblue'
-    ).encode(
-        text='note:N'
+    dx= -80,
+    dy= 175
+).encode(
+    text='note:N',
+).properties(
+    title='Jumlah Pendapatan per Kapita di Indonesia'
 )
-label_pers_jum_pendapatan = alt.Chart(pd.DataFrame({'note':[note_jum_pendapatan]})).mark_text(
+hover_for_total_pendapatan = alt.selection_single(
+        fields=["Tahun"],
+        nearest=True,
+        on="mouseover",
+        empty="none",
+    )
+points_for_total_pendapatan = line_chart_pendapatan.transform_filter(hover_for_total_pendapatan).mark_circle(size=65)
+tooltips_for_total_pendapatan = (
+        alt.Chart(jumpen)
+        .mark_rule()
+        .encode(
+            x=alt.X('Tahun:N', axis=alt.Axis(labelAngle=0)),
+            y=alt.Y("INDONESIA:Q", title='Pendapatan per Kapita (/ribu rupiah)', scale=alt.Scale(zero=False)),
+            opacity=alt.condition(hover_for_total_pendapatan, alt.value(0.3), alt.value(0)),
+            tooltip=[
+                alt.Tooltip("Tahun", title="Tahun"),
+                alt.Tooltip("INDONESIA", title='Pendapatan per Kapita (/ribu rupiah)'),
+            ],
+        )
+        .add_selection(hover_for_total_pendapatan)
+    )
+new_combine_chart_jumpen = line_chart_pendapatan + source_chart_total_pendapatan + points_for_total_pendapatan + tooltips_for_total_pendapatan
+
+# 8. Making a waterfall chart
+def waterfall_chart_jumpen(source):
+    base_chart = alt.Chart(source).transform_window(
+        window_sum_amount="sum(Kenaikan)",
+        window_lead_label="lead(Tahun)",
+    ).transform_calculate(
+        calc_lead="datum.window_lead_label === null ? datum.Tahun : datum.window_lead_label",
+        calc_prev_sum="datum.Tahun === 'End' ? 0 : datum.window_sum_amount - datum.Kenaikan",
+        calc_amount="datum.Tahun === 'End' ? datum.window_sum_amount : datum.Kenaikan",
+        calc_text_amount="(datum.Tahun !== 'Begin' && datum.Tahun !== 'End' && datum.calc_amount > 0 ? '+' : '') + datum.calc_amount",
+        calc_center="(datum.window_sum_amount + datum.calc_prev_sum) / 2",
+        calc_sum_dec="datum.window_sum_amount < datum.calc_prev_sum ? datum.window_sum_amount : ''",
+        calc_sum_inc="datum.window_sum_amount > datum.calc_prev_sum ? datum.window_sum_amount : ''",
+    ).encode(
+        x=alt.X(
+            "Tahun:O",
+            axis=alt.Axis(title="Tahun", labelAngle=0),
+            sort=None,
+        )
+    ).properties(
+        title='Rata-rata Pendapatan per Kapita di Indonesia'
+    )
+    color_coding = {
+        "condition": [
+            {"test": "datum.Tahun === 'Begin' || datum.Tahun === 'End'", "value": "#878d96"},
+            {"test": "datum.calc_amount < 0", "value": "#fa4d56"},
+        ],
+        "value": "#24a148",
+    }
+    bar = base_chart.mark_bar(size=45).encode(
+        y=alt.Y("calc_prev_sum:Q", title="Pendapatan (/ribu)"),
+        y2=alt.Y2("window_sum_amount:Q"),
+        color=color_coding,
+    )
+    rule = base_chart.mark_rule(
+        xOffset=-22.5,
+        x2Offset=22.5,
+    ).encode(
+        y="window_sum_amount:Q",
+        x2="calc_lead",
+    )
+    text_pos_values_top_of_bar = base_chart.mark_text(
+        baseline="bottom",
+        dy=-4
+    ).encode(
+        text=alt.Text("calc_sum_inc:N"),
+        y="calc_sum_inc:Q"
+    )
+    text_neg_values_bot_of_bar = base_chart.mark_text(
+        baseline="top",
+        dy=4
+    ).encode(
+        text=alt.Text("calc_sum_dec:N"),
+        y="calc_sum_dec:Q"
+    )
+    text_bar_values_mid_of_bar = base_chart.mark_text(baseline="middle").encode(
+        text=alt.Text("calc_text_amount:N"),
+        y="calc_center:Q",
+        color=alt.value('gray'),
+    )
+    
+    combined = bar + rule + text_pos_values_top_of_bar + text_neg_values_bot_of_bar + text_bar_values_mid_of_bar
+    return st.altair_chart(combined, use_container_width=True)
+
+# 9. Making Facet Chart for Pengeluaran File
+def facet_chart_pengeluaran(pbm):
+    pbm = pbm.loc[pbm['Kelompok Barang'] >= 2019].reset_index(drop=True)
+    pbm = pbm.rename(columns={'Kelompok Barang' : 'Tahun'})
+    data_melt = pd.melt(
+        pbm, 
+        id_vars='Tahun',
+        value_vars=['Jumlah makanan', 'Jumlah bukan makanan'],
+        var_name='kategori',
+        value_name='Jumlah Pengeluaran'
+    )
+    chart = alt.Chart(data_melt).mark_bar().encode(
+        x=alt.X('kategori:N', title='Kategori', axis=None),
+        y=alt.Y('Jumlah Pengeluaran:Q', title='Jumlah Pengeluaran (%)'),
+        color='kategori:N'
+    ).properties(
+        height=100,
+        width=60
+    )
+    facet_chart = chart.facet(
+        facet=alt.Facet('Tahun:O', title='Tahun'),
+        columns=3
+    ).resolve_scale(y='independent').properties(
+        title='Jumlah Pengeluaran per Bulan di Indonesia'
+    )
+    return st.altair_chart(facet_chart, use_container_width=True)
+
+# 10. Making Facet Chart of Kategori jumlah makanan in pbm file
+def facet_chart_jumlah_makanan(pbm):
+    columns_to_drop = ['Perumahan dan fasilitas rumahtangga' ,'Barang dan jasa', 'Pakaian, alas kaki dan tutup kepala' ,'Barang-barang tahan lama' ,'Pajak dan asuransi' ,'Keperluan pesta dan upacara' ,'Jumlah makanan' ,'Jumlah bukan makanan']
+    pbm = pbm.drop(columns=columns_to_drop)
+    pbm = pbm.loc[pbm['Kelompok Barang'] >= 2019].reset_index(drop=True)
+    pbm = pbm.rename(columns={'Kelompok Barang' : 'Tahun'})
+    data_melt = pd.melt(
+        pbm, 
+        id_vars='Tahun',
+        var_name='kategori',
+        value_name='Jumlah Pengeluaran'
+    )
+    chart = alt.Chart(data_melt).mark_bar().encode(
+        y=alt.Y('kategori:N', title='Kategori', sort=alt.SortField(field='Jumlah Pengeluaran', order='descending')),
+        x=alt.X('Jumlah Pengeluaran:Q', title='Jumlah Pengeluaran (%)'),
+        color=alt.condition(
+            alt.datum.kategori == 'Daging',
+            alt.value('steelblue'),
+            alt.value('lightblue')
+        )
+    )
+    facet_chart = chart.facet(
+        facet=alt.Facet('Tahun:O', title='Tahun'),
+        columns=2
+    ).resolve_scale(y='independent').properties(
+        title='Jumlah Pengeluaran Khusus Makanan per Bulan di Indonesia'
+    )
+
+    return st.altair_chart(facet_chart, use_container_width=True)
+ 
+# 11. Making bar chart for waste
+bar_chart_kategori = alt.Chart(pl2).mark_bar().encode(
+    x=alt.X('Sampah Dikumpulkan (Kg):Q'),
+    y=alt.Y('Kategori:N', sort=alt.SortField(field='Sampah Dikumpulkan (Kg)', order='descending'), title='Kategori Sampah'),
+).properties(
+    title='Kategori sampah yang terkumpul di Indonesia'
+)
+source_total_waste = "SOURCE: Sistem Informasi Dirjen PSLB3, 2023"
+source_chart_total_waste = alt.Chart(pd.DataFrame({'note': [source_total_waste]})).mark_text(
     align='left',
-    baseline='middle',
+    baseline='top',
+    color='gray',
     fontSize=10,
-    fontWeight='normal',
-    dy=-25,
-    dx=390,
-    color='green'
-    ).encode(
-        text='note:N'
+    dx= -95,
+    dy= 200
+).encode(
+    text='note:N',
 )
-combined_chart_for_pers_jum = pers_jum_konsumsi_line_chart + pers_jum_pendapatan_line_chart + label_pers_jum_konsumsi + label_pers_jum_pendapatan
+combined_waste_chart = bar_chart_kategori + source_chart_total_waste
+
+
 
 # Start writing
 st.title('KECUKUPAN DAGING AYAM DI INDONESIA')
@@ -313,12 +462,6 @@ st.write("""
          Seiring dengan pertumbuhan penduduk yang pesat dengan kesadaran yang tinggi tentang pentingnya 
          protein hewani, maka perlu diimbangi dengan penyediaannya.
          """)
-st.write('''
-         Pada diagram di bawah, dapat dilihat bahwa jumlah populasi ayam hidup jauh lebih
-         banyak dibandingkan dengan jumlah populasi manusia. Produksi daging ayam di Indonesia
-         jauh melebihi konsumsi masyarakat Indonesia, yang menghasilkan surplus daging ayam yang dapat
-         diekspor maupun diolah kedalam bentuk makanan lainnya.
-             ''')
 st.write('')
 
 column1, column2 = st.columns(2)
@@ -327,18 +470,28 @@ with column1:
 with column2:
     st.altair_chart(combined_total_jum_konsumsi, use_container_width=True)
 column3, column4 = st.columns(2)
-
-st.altair_chart(combined_chart_for_surplus, use_container_width=True)
+with column3:
+    st.altair_chart(combined_chart_for_surplus, use_container_width=True)
+with column4:
+    st.write('')
+    st.write('')
+    st.write('')
+    st.write('''
+             Dapat kita simpulkan pada 3 diagram tersebut bahwa jumlah populasi ayam hidup jauh lebih
+             banyak dibandingkan dengan jumlah populasi manusia. Produksi daging ayam di Indonesia
+             jauh melebihi konsumsi masyarakat Indonesia, yang menghasilkan surplus daging ayam yang dapat
+             diekspor maupun diolah kedalam bentuk makanan lainnya.
+             ''')
 
 st.markdown("**Namun...**")
 
 tab1, tab2, tab3 = st.tabs(["Gambar 1", "Gambar 2", "Gambar 3"])
 with tab1:
-    st.image('File csv dan excel/Foto-foto untuk report/Kelaparan 1.PNG', caption='Kompas, 2023')
+    st.image('File csv dan excel\Foto-foto untuk report\Kelaparan 1.PNG', caption='Kompas, 2023')
 with tab2:
-    st.image('File csv dan excel/Foto-foto untuk report/Kelaparan 2.PNG', caption='CNBC, 2023')
+    st.image('File csv dan excel\Foto-foto untuk report\Kelaparan 2.PNG', caption='CNBC, 2023')
 with tab3:
-    st.image('File csv dan excel/Foto-foto untuk report/Kelaparan 3.PNG', caption='Tempo, 2023')
+    st.image('File csv dan excel\Foto-foto untuk report\Kelaparan 3.PNG', caption='Tempo, 2023')
     
 column5, column6 = st.columns(2)
 with column5:
@@ -352,11 +505,40 @@ with column6:
     st.write('')
     st.metric("**Zero Hunger Goal in Indonesia**", value=f'{format_big_number(CURR_SCORE)}%', delta=f'{(CURR_SCORE - PERV_SCORE):.2f}')
 
-st.header('2. Pendapatan Masyarakat Indonesia')
+st.header('2. Harga Daging Ayam di Indonesia')
 st.write('')
 st.write('')
 st.write('')
 
+waterfall_chart_jumpen(source)
+st.write('')
+st.write('')
+column8, column9=st.columns(2)
+with column8:
+    facet_chart_pengeluaran(pbm)
+    st.markdown('<span style="color: grey">SOURCE: Badan Pusat Statistika, 2023</span>', unsafe_allow_html=True)
+with column9:
+    st.write('')
+    st.write('')
+    st.write('')
+    st.write('')
+    st.write('')
+    st.write('')
+    st.write('')
+    st.write('')
+    st.write('''
+             Masyarakat Indonesia lebih terlihat seimbang dalam pengeluarannya terkait kategori
+             jumlah pengeluarannya. Akan tetapi, kategori pengeluaran bukan makanan lebih besar sedikit
+             dibandingkan dengan kategori pengeluaran makanan tiap tahunnya.
+             ''')
+
+with st.expander('Tekan untuk melihat perbandingan beberapa bahan makanan'):
+    st.write('')
+    facet_chart_jumlah_makanan(pbm)
+    st.markdown('<span style="color: grey">SOURCE: Badan Pusat Statistika, 2023</span>', unsafe_allow_html=True)
+
+st.write('')
+st.write('')
 
 selected_countries = st.multiselect('Select provinces to compare:', hdg.columns[1:].tolist(), ['INDONESIA'])
 color_scale = alt.Scale(domain=selected_countries, range='category')
@@ -410,88 +592,20 @@ tooltips_for_harga_daging_ayam = (
         .add_selection(hover_for_harga_daging_ayam)
     )
 combined_chart_harga_daging_ayam = hdg_line_chart + label_harga_daging_ayam + source_chart_harga_daging_ayam
+st.altair_chart(combined_chart_harga_daging_ayam, use_container_width=True)
 
-# Processing for interactive chart jumlah_pendapatan
-data_long_for_jumpen = pd.melt(jumpen, id_vars=['Tahun'], var_name='Nama Provinsi', value_name='provinsi_indonesia')
-jumpen_line_chart = alt.Chart(data_long_for_jumpen).mark_line().encode(
-    x=alt.X('Tahun:N',axis=alt.Axis(labelAngle=0)),
-    y=alt.Y('provinsi_indonesia:Q', title='Pendapatan per Kapita (/ribu rupiah)', scale=alt.Scale(zero=False)),
-    color=alt.Color('Nama Provinsi:N', legend=None, scale=color_scale)
-).properties(
-    title='Jumlah Pendapatan per Kapita Masyarakat Indonesia di Beberapa Provinsi di Indonesia'
-)
-label_jumpen = alt.Chart(data_long_for_jumpen).mark_text(align='left', dx=3).encode(
-    x=alt.X('Tahun:N', aggregate='max', title='Tahun'),
-    y=alt.Y('provinsi_indonesia:Q', title='Pendapatan per Kapita (/ribu rupiah)', aggregate={'argmax':'Tahun'}),
-    color=alt.Color('Nama Provinsi:N', legend=None),
-    text=alt.Text('Nama Provinsi')
-)
-source_total_pendapatan = "SOURCE: Badan Pusat Statistik, 2023"
-source_chart_total_pendapatan = alt.Chart(pd.DataFrame({'note': [source_total_pendapatan]})).mark_text(
-    align='left',
-    baseline='top',
-    color='gray',
-    fontSize=10,
-    dx= -80,
-    dy= 175
-).encode(
-    text='note:N',
-)
-hover_for_total_pendapatan = alt.selection_single(
-        fields=["Tahun"],
-        nearest=True,
-        on="mouseover",
-        empty="none",
-    )
-points_for_total_pendapatan = jumpen_line_chart.transform_filter(hover_for_total_pendapatan).mark_circle(size=65)
-tooltips_for_total_pendapatan = (
-        alt.Chart(data_long_for_jumpen)
-        .mark_rule()
-        .encode(
-            x=alt.X('Tahun:N', axis=alt.Axis(labelAngle=0)),
-            y=alt.Y('provinsi_indonesia:Q', title='Pendapatan per Kapita (/ribu rupiah)', scale=alt.Scale(zero=False)),
-            opacity=alt.condition(hover_for_total_pendapatan, alt.value(0.3), alt.value(0)),
-            tooltip=[
-                alt.Tooltip("Tahun", title="Tahun"),
-                alt.Tooltip('provinsi_indonesia', title='Pendapatan per Kapita (/ribu rupiah)'),
-            ],
-        )
-        .add_selection(hover_for_total_pendapatan)
-    )
-combine_chart_jumpen = jumpen_line_chart + label_jumpen + source_chart_total_pendapatan
-
-column7, column8 = st.columns(2)
-with column7:
-    st.altair_chart(combined_chart_harga_daging_ayam, use_container_width=True)
-with column8:
-    st.altair_chart(combine_chart_jumpen, use_container_width=True)
-
-column9, column10 = st.columns(2)
-with column9:
+cols2 = st.columns(3)
+with cols2[1]:
     st.metric("**Rata-rata Harga Daging Ayam Terbaru per Tahun di Indonesia**", 
-              value=f'Rp {format_big_number(hdgpt["Indonesia"].iloc[-1])}', 
-              delta=f'{format_big_number((hdgpt["Indonesia"].iloc[-1]) - (hdgpt["Indonesia"].iloc[-2]))}')
-with column10:
-    st.metric('**Rata-rata Pendapatan Masyarakat Terbaru per Kapita di Indonesia (/ribu rupiah)**',
-              value=f'Rp {jumpen["INDONESIA"].iloc[-1]}',
-              delta=f'{format_big_number((jumpen["INDONESIA"].iloc[-1]) - (jumpen["INDONESIA"].iloc[-2]))}')
+                value=f'Rp {format_other_big_number(hdgpt["Indonesia"].iloc[-1])}',
+                delta=f'{format_big_number((hdgpt["Indonesia"].iloc[-1]) - (hdgpt["Indonesia"].iloc[-2]))}')    
+
 st.write('')
 st.write('')
 st.write('''
          Harga ayam per bulannya mengalami kenaikan dan penurunan yang fluktuatif, namun harga berada di range yang tidak berubah.
-         Dapat dilihat bahwa harga daging ayam di Indonesia bagian barat berada di rentang 35rb/kg kebawah, sedangkan di Indonesia bagian timur
-         harga daging ayam dapat mencapai 50rb/kg yang berada di wilayah Papua. Perbedaan harga ini dapat terjadi
-         karena perbedaan produksi ayam hidup di wilayah tersebut. Ketika produksi ayam hidup kecil, maka
-         produksi daging ayam pun akan kecil, sehingga untuk mencukupi konsumsi daging ayam harus membeli
-         dari wilayah lain dengan harga yang tinggi. Harga dapat naik akibat dari biaya transportasinya.
+         Dapat dilihat bahwa harga daging ayam di Indonesia kerap berada di jangakuan 35rb - 40rb rupiah.
          ''')
-st.write('''
-         Ketika jumlah pendapatan penduduk meningkat, jumlah konsumsi daging ayam pun ikut meningkat. Begitu juga sebaliknya,
-         ketika pendapatan menurun, maka jumlah konsumsi daging ayam ikut menurun. Akan tetapi, pada tahun 2021 - 2022. Peningkatan jumlah pendapatan
-         yang besar, membuat masyarakat menabung dan membeli barang atau bahan pangan yang lain, sehingga membuat konsumsi daging ayam
-         pada tahun itu menurun.
-         ''')
-st.altair_chart(combined_chart_for_pers_jum, use_container_width=True)
 
 st.header('3. Produksi Sampah di Indonesia')
 st.write('')
@@ -526,10 +640,10 @@ source_chart_total_jum_food_waste_bar = alt.Chart(pd.DataFrame({'note': [source_
 combined_bar_Chart_food_waste = psi_bar_chart + source_chart_total_jum_food_waste_bar
 st.altair_chart(combined_bar_Chart_food_waste, use_container_width=True)
 
-column11, column12 = st.columns(2)
-with column11:
+column7, column8 = st.columns(2)
+with column7:
     st.altair_chart(combined_pi_chart_food_waste, use_container_width=True)
-with column12:
+with column8:
     st.write('')
     st.write('')
     st.write('''
@@ -537,21 +651,18 @@ with column12:
              terbanyak. Bahan pangan yang berjamur, basi, membuang makanan yang eksesif, dan ketidak-pedulian terhadap sampah makanan
              dapat menambah jumlah produksi sampah di Indonesia.
              ''')
-    
+
+st.altair_chart(combined_waste_chart, use_container_width=True)
+
+
 st.header('4. Kesimpulan dan Saran')
 st.write('''
-         Produksi ayam hidup yang tinggi, akan membuat produksi daging ayam juga akan tinggi. Harapannya seperti itu,
-         namun penurunan berat ayam saat transportasi, daging yang berjamur, daging yang kurang layak dikonsumsi,
-         dan penduduk yang tidak peduli pada sampah organik dapat membuat jumlah daging ayam yang sebenarnya
-         berada di tangan masyarakat akan lebih sedikit.
+         Masyarakat Indonesia mampu untuk membeli bahan makanan berupa daging. Akan tetapi untuk tahun ini juga masyarakat mementingkan
+         pembelian bukan makanan. Pada saat membeli makanan pun, masyarakat lebih mementingkan membeli makanan jadi. Bisa disimpulkan bahwa
+         harga daging ayam bukanlah salah satu alasan mengapa masih ada kelaparan di Indonesia
          ''')
 st.write('''
-         Pemerataan harga daging ayam harus diberlakukan. Akan tetapi harus diikuti dengan
-         pemerataan pembangunan dan pendidikan dari program pemerintah. Hal ini diharapkan akan
-         menyamakan harga daging ayam di setiap wilayahnya dan dapat meningkatkan produksi daging ayam nasional.
-         ''')
-st.write('''
-         Selain itu, pemberitahuan dan pendidikan tentang sampah organik dan anorganik, khususnya
+         Pembuangan sampah bahan organik dapat mempengaruhi angka kelaparan. Sebaiknya, pemberitahuan dan pendidikan tentang sampah organik dan anorganik, khususnya
          cara untuk mempertahankan kesegaran daging ayam, harus disosialisasikan kepada masyarakat umum.
          Hal ini dapat membuat jumlah sampah yang terbuang di Indonesia berkurang.
          ''')
