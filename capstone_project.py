@@ -72,7 +72,7 @@ total_pop_line_chart = alt.Chart(data_long_for_total_pop).mark_line().encode(
     y=alt.Y('total_manusia_dan_ayam:Q', title='Jumlah/1000 satuan', scale=alt.Scale(zero=False)),
     color='category:N'
 ).properties(
-    title='Perbandingan Populasi Masyarakat dan Produksi Ayam Pedaging di Indonesia'
+    title='Perbandingan Populasi Masyarakat dan Produksi Daging Ayam Pedaging di Indonesia'
 )
 
 source_total_pop = "SOURCE: Badan Pusat Statistik, 2022 & 2023"
@@ -233,14 +233,18 @@ for value in psi.columns.values:
         jum_food_waste.append(value_for_indonesia)
 for_pie_chart_food_waste_dataframe = pd.DataFrame({
     'Category': new_psi_column,
-    'Value (tonnes/year)': jum_food_waste 
+    'Amount': jum_food_waste
 })
-psi_pie_chart = alt.Chart(for_pie_chart_food_waste_dataframe).mark_arc().encode(
-    theta='Value (tonnes/year)',
-    color='Category'
+psi_pie_chart = alt.Chart(for_pie_chart_food_waste_dataframe).encode(
+    x=alt.X('Amount:Q', title='Jumlah (kg)'),
+    y=alt.Y('Category:N', title='Kategori', sort=alt.SortField(field= 'Amount',order='descending')),
+    color=alt.value('lightblue')
 ).properties(
     title='Kategori Penyumbang Sampah di Indonesia'
 )
+psi_pie_charted = psi_pie_chart.mark_bar()
+psi_pie_text = psi_pie_chart.mark_text(align='left', dx=5).encode(text=alt.Text('Amount:Q'), color=alt.value('black'))
+
 source_total_jum_food_waste = "SOURCE: United Nations Enviromental Program (UNEP), 2021"
 source_chart_total_jum_food_waste = alt.Chart(pd.DataFrame({'note': [source_total_jum_food_waste]})).mark_text(
     align='left',
@@ -248,11 +252,11 @@ source_chart_total_jum_food_waste = alt.Chart(pd.DataFrame({'note': [source_tota
     color='gray',
     fontSize=10,
     dx= -130,
-    dy= 175
+    dy= 100
 ).encode(
     text='note:N',
 )
-combined_pi_chart_food_waste = psi_pie_chart + source_chart_total_jum_food_waste
+combined_pi_chart_food_waste = psi_pie_charted + source_chart_total_jum_food_waste + psi_pie_text
 
 # 6. Chart Persentase Kenaikan Jumlah Pendapatan
 persentase_jumlah_pendapatan = []
@@ -356,20 +360,20 @@ def waterfall_chart_jumpen(source):
         baseline="bottom",
         dy=-4
     ).encode(
-        text=alt.Text("calc_sum_inc:N"),
-        y="calc_sum_inc:Q"
+        text=alt.Text("calc_sum_inc:N", format='.2f'),
+        y="calc_sum_inc:Q",
     )
     text_neg_values_bot_of_bar = base_chart.mark_text(
         baseline="top",
         dy=4
     ).encode(
-        text=alt.Text("calc_sum_dec:N"),
+        text=alt.Text("calc_sum_dec:N", format='.2f'),
         y="calc_sum_dec:Q"
     )
     text_bar_values_mid_of_bar = base_chart.mark_text(baseline="middle").encode(
-        text=alt.Text("calc_text_amount:N"),
+        text=alt.Text("calc_text_amount:N", format='.2f'),
         y="calc_center:Q",
-        color=alt.value('gray'),
+        color=alt.value('black'),
     )
     
     combined = bar + rule + text_pos_values_top_of_bar + text_neg_values_bot_of_bar + text_bar_values_mid_of_bar
@@ -386,15 +390,19 @@ def facet_chart_pengeluaran(pbm):
         var_name='kategori',
         value_name='Jumlah Pengeluaran'
     )
-    chart = alt.Chart(data_melt).mark_bar().encode(
+    chart = alt.Chart(data_melt).encode(
         x=alt.X('kategori:N', title='Kategori', axis=None),
         y=alt.Y('Jumlah Pengeluaran:Q', title='Jumlah Pengeluaran (%)'),
-        color='kategori:N'
+        color='kategori:N',
+        text=alt.Text('Jumlah Pengeluaran:Q', format='.2f')
     ).properties(
         height=100,
         width=60
     )
-    facet_chart = chart.facet(
+    text = chart.mark_text(baseline='bottom')
+    charted = chart.mark_bar()
+    combined = charted + text
+    facet_chart = combined.facet(
         facet=alt.Facet('Tahun:O', title='Tahun'),
         columns=3
     ).resolve_scale(y='independent').properties(
@@ -414,31 +422,51 @@ def facet_chart_jumlah_makanan(pbm):
         var_name='kategori',
         value_name='Jumlah Pengeluaran'
     )
-    chart = alt.Chart(data_melt).mark_bar().encode(
+    chart = alt.Chart(data_melt).encode(
         y=alt.Y('kategori:N', title='Kategori', sort=alt.SortField(field='Jumlah Pengeluaran', order='descending')),
         x=alt.X('Jumlah Pengeluaran:Q', title='Jumlah Pengeluaran (%)'),
         color=alt.condition(
             alt.datum.kategori == 'Daging',
             alt.value('steelblue'),
             alt.value('lightblue')
+        ),
+        text=alt.condition(
+            alt.datum.kategori == 'Daging',
+            alt.Text('Jumlah Pengeluaran:Q', format='.2f' ),
+            alt.value('')
         )
     )
-    facet_chart = chart.facet(
+    charted = chart.mark_bar()
+    text = chart.mark_text(align='left', dx=5)
+    combined = charted + text
+    facet_chart = combined.facet(
         facet=alt.Facet('Tahun:O', title='Tahun'),
         columns=2
-    ).resolve_scale(y='independent').properties(
-        title='Jumlah Pengeluaran Khusus Makanan per Bulan di Indonesia'
+    ).resolve_scale(y='independent', x='independent').properties(
+        title='Persentasi Pengeluaran Khusus Makanan per Bulan di Indonesia'
     )
 
     return st.altair_chart(facet_chart, use_container_width=True)
  
 # 11. Making bar chart for waste
-bar_chart_kategori = alt.Chart(pl2).mark_bar().encode(
+bar_chart_kategori = alt.Chart(pl2).encode(
     x=alt.X('Sampah Dikumpulkan (Kg):Q'),
     y=alt.Y('Kategori:N', sort=alt.SortField(field='Sampah Dikumpulkan (Kg)', order='descending'), title='Kategori Sampah'),
+    color=alt.condition(
+        alt.datum['Kategori'] == 'SISA MAKANAN',
+        alt.value('steelblue'),
+        alt.value('lightblue')
+    ),
+    text=alt.condition(
+        alt.datum['Kategori'] == 'SISA MAKANAN',
+        'Sampah Dikumpulkan (Kg):Q',
+        alt.value('')
+    )
 ).properties(
     title='Kategori sampah yang terkumpul di Indonesia'
 )
+bar_charted_kategori = bar_chart_kategori.mark_bar()
+bar_text_kategori = bar_chart_kategori.mark_text(align='left', dx=5)
 source_total_waste = "SOURCE: Sistem Informasi Dirjen PSLB3, 2023"
 source_chart_total_waste = alt.Chart(pd.DataFrame({'note': [source_total_waste]})).mark_text(
     align='left',
@@ -450,7 +478,7 @@ source_chart_total_waste = alt.Chart(pd.DataFrame({'note': [source_total_waste]}
 ).encode(
     text='note:N',
 )
-combined_waste_chart = bar_chart_kategori + source_chart_total_waste
+combined_waste_chart = bar_charted_kategori + source_chart_total_waste + bar_text_kategori
 
 
 
@@ -482,6 +510,16 @@ with column4:
              jauh melebihi konsumsi masyarakat Indonesia, yang menghasilkan surplus daging ayam yang dapat
              diekspor maupun diolah kedalam bentuk makanan lainnya.
              ''')
+
+st.markdown("**Namun...**")
+
+tab1, tab2, tab3 = st.tabs(["Gambar 1", "Gambar 2", "Gambar 3"])
+with tab1:
+    st.image('File csv dan excel/Foto-foto untuk report/Kelaparan 1.PNG', caption='Kompas, 2023')
+with tab2:
+    st.image('File csv dan excel/Foto-foto untuk report/Kelaparan 2.PNG', caption='CNBC, 2023')
+with tab3:
+    st.image('File csv dan excel/Foto-foto untuk report/Kelaparan 3.PNG', caption='Tempo, 2023')
     
 column5, column6 = st.columns(2)
 with column5:
@@ -494,6 +532,10 @@ with column6:
     st.write('')
     st.write('')
     st.metric("**Zero Hunger Goal in Indonesia**", value=f'{format_big_number(CURR_SCORE)}%', delta=f'{(CURR_SCORE - PERV_SCORE):.2f}')
+    
+st.write('')
+st.write('Apakah ada keterkaitannya dengan harga daging ayam dan jumlah sampah makanan yang terbuang di Indonesia?')
+st.write('')
 
 st.header('2. Harga Daging Ayam di Indonesia')
 st.write('')
@@ -594,7 +636,7 @@ st.write('')
 st.write('')
 st.write('''
          Harga ayam per bulannya mengalami kenaikan dan penurunan yang fluktuatif, namun harga berada di range yang tidak berubah.
-         Dapat dilihat bahwa harga daging ayam di Indonesia kerap berada di jangakuan 35rb - 40rb rupiah.
+         Dapat dilihat bahwa harga daging ayam di Indonesia kerap berada di jangkauan 35rb - 40rb rupiah.
          ''')
 
 st.header('3. Produksi Sampah di Indonesia')
@@ -611,11 +653,18 @@ highlight_color_psi = alt.condition(
     alt.value('steelblue'),
     alt.value('lightblue')
 )
-psi_bar_chart = alt.Chart(y_scale_psi).mark_bar().encode(
+psi_bar_chart = alt.Chart(y_scale_psi).encode(
     y=alt.Y('country:N', sort=alt.SortField(field=f'{selected_option_for_food_waste}', order='descending'), title='Negara'),
     x=alt.X(f'{selected_option_for_food_waste}'),
-    color = highlight_color_psi
+    color = highlight_color_psi,
+    text = alt.condition(
+        alt.datum['country'] == 'Indonesia',
+        f'{selected_option_for_food_waste}:Q',
+        alt.value('')
+    )
 )
+psi_charted = psi_bar_chart.mark_bar()
+psi_text = psi_bar_chart.mark_text(align='left', dx=5)
 source_total_jum_food_waste_bar = "SOURCE: United Nations Enviromental Program (UNEP), 2021"
 source_chart_total_jum_food_waste_bar = alt.Chart(pd.DataFrame({'note': [source_total_jum_food_waste_bar]})).mark_text(
     align='left',
@@ -627,7 +676,7 @@ source_chart_total_jum_food_waste_bar = alt.Chart(pd.DataFrame({'note': [source_
 ).encode(
     text='note:N',
 )
-combined_bar_Chart_food_waste = psi_bar_chart + source_chart_total_jum_food_waste_bar
+combined_bar_Chart_food_waste = psi_charted + psi_text + source_chart_total_jum_food_waste_bar
 st.altair_chart(combined_bar_Chart_food_waste, use_container_width=True)
 
 column7, column8 = st.columns(2)
@@ -643,7 +692,8 @@ with column8:
              ''')
 
 st.altair_chart(combined_waste_chart, use_container_width=True)
-
+st.write('')
+st.write('Sampah sisa makanan sebesar 1,7 juta kg, jika sebelum dibuang, berjamur, dll, ketika dipertahankan kesegarannya maupun diolah kedalam makanan jadi yang lain. Dapat menaikkan angka zero hunger goal di Indonesia')
 
 st.header('4. Kesimpulan dan Saran')
 st.write('''
